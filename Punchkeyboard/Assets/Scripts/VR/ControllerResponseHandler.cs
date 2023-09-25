@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using Valve.VR;
+using Valve.VR.Input;
 
 public class ControllerResponseHandler : MonoBehaviour
 {
@@ -13,46 +15,62 @@ public class ControllerResponseHandler : MonoBehaviour
 	public Color HighlightedBtnColor;
 	private Color initialBtnColor;
 
-	private SteamVR_Controller.Device device;
+	private SteamVR_Input_Action trackpadAction;
+	private SteamVR_Input_Action triggerAction;
 	private const int hapticFeedbackStrength = 600;
 
 	void Start ()
 	{
-		Controller.TrackpadPressed += HandleTrackpad;
-		Controller.TriggerPressed += HandleTrigger;
+		trackpadAction = SteamVR_Actions.default_.TrackpadPressed;
+		triggerAction = SteamVR_Actions.default_.GrabPinch;
+
+		// Bind the trackpad and trigger buttons to the actions
+		trackpadAction.onStateUpdate += OnTrackpadStateUpdate;
+		triggerAction.onStateUpdate += OnTriggerStateUpdate;
+
 
 		initialBtnColor = PrimarySuggestionBtn.GetComponent<Image> ().color;
 	}
 
-	private void HandleTrackpad(int deviceID, string side)
+	private void OnTrackpadStateUpdate(SteamVR_Action_State_t state)
 	{
-		device = SteamVR_Controller.Input (deviceID);
-		device.TriggerHapticPulse (hapticFeedbackStrength);
+		// If the trackpad is pressed, trigger haptic feedback
+		if (state.delta > 0)
+		{
+			SteamVR_Actions.default_.TriggerHapticPulse(state.deviceIndex, hapticFeedbackStrength);
+		}
 
-		if (side == "left")
+		// Get the side of the trackpad that was pressed
+		string side = state.side;
+
+		// Highlight the corresponding button
+		switch (side)
 		{
-			SecondarySuggestionBtn.onClick.Invoke ();
-			StartCoroutine ("HighlightButton", SecondarySuggestionBtn.GetComponent<Image> ());
-		}
-		else if (side == "center")
-		{
-			PrimarySuggestionBtn.onClick.Invoke ();
-			StartCoroutine ("HighlightButton", PrimarySuggestionBtn.GetComponent<Image> ());
-		}
-		else if (side == "right")
-		{
-			TertiarySuggestionBtn.onClick.Invoke ();
-			StartCoroutine ("HighlightButton", TertiarySuggestionBtn.GetComponent<Image> ());
+			case "left":
+				StartCoroutine("HighlightButton", SecondarySuggestionBtn.GetComponent<Image>());
+				break;
+			case "center":
+				StartCoroutine("HighlightButton", PrimarySuggestionBtn.GetComponent<Image>());
+				break;
+			case "right":
+				StartCoroutine("HighlightButton", TertiarySuggestionBtn.GetComponent<Image>());
+				break;
 		}
 	}
 
-	private void HandleTrigger()
+	// This method is called when the state of the trigger changes
+	private void OnTriggerStateUpdate(SteamVR_Action_State_t state)
 	{
-		TextInputField.ActivateInputField ();
+		// If the trigger is pressed, activate the input field
+		if (state.delta > 0)
+		{
+			TextInputField.ActivateInputField();
+		}
 	}
 
 	private IEnumerator HighlightButton (Image img)
 	{
+		// Highlight the button for a certain amount of time
 		float elapsedTime = 0.0f;
 		float totalTime = 0.1f;
 		while (elapsedTime < totalTime)
@@ -66,6 +84,7 @@ public class ControllerResponseHandler : MonoBehaviour
 
 	private IEnumerator FadeButton (Image img)
 	{
+		// Fade the button back to its original color for a certain amount of time
 		float elapsedTime = 0.0f;
 		float totalTime = 0.05f;
 		while (elapsedTime < totalTime)
@@ -78,7 +97,8 @@ public class ControllerResponseHandler : MonoBehaviour
 
 	void OnDisable()
 	{
-		Controller.TrackpadPressed -= HandleTrackpad;
-		Controller.TriggerPressed -= HandleTrigger;
+		// Unbind the trackpad and trigger buttons from the actions
+		trackpadAction.onStateUpdate -= OnTrackpadStateUpdate;
+		triggerAction.onStateUpdate -= OnTriggerStateUpdate;
 	}
 }

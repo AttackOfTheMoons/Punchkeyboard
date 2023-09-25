@@ -1,11 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Valve.VR;
 
 public class CollisionFeedbackController : MonoBehaviour
 {
-	public SteamVR_TrackedObject TrackedObject;
-	private SteamVR_Controller.Device device;
+	public Valve.VR.SteamVR_TrackedObject TrackedObject;
+	// private Valve.VR.SteamVR_Controller.Device device;
 	private const int KeyPressFeedbackStrength = 1500;
 	private bool isColliding = false;
 
