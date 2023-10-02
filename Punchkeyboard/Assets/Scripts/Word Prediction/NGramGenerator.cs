@@ -8,6 +8,7 @@ using System.IO;
 using System;
 using UnityEngine.UI;
 using System.Text.RegularExpressions;
+using UnityEditor;
 
 public class NGramGenerator : MonoBehaviour
 {
@@ -22,7 +23,7 @@ public class NGramGenerator : MonoBehaviour
 	private void Awake()
 	{
 		// Uncomment this when working in the Unity Editor or with new dictionaries
-		/*
+		// /*
 		string directoryPath = Application.dataPath + "/Resources/WordPrediction";
 		if(!Directory.Exists(directoryPath))
 		{    
@@ -49,7 +50,7 @@ public class NGramGenerator : MonoBehaviour
 
 			LevenshteinCorpus = levenshteinDict.Keys.ToList();
 		}
-		*/
+		// */
 
 		biGramDict = LoadDictionary("WordPrediction/biGramDict");
 		levenshteinDict = LoadDictionary("WordPrediction/levenshteinDict");
@@ -98,9 +99,9 @@ public class NGramGenerator : MonoBehaviour
 		string s = GetLine(biGramDict);
 		File.WriteAllText(Application.dataPath + "/Resources/AutoCorrect/biGramDict.txt", s);
 
-//		#if UNITY_EDITOR
-//			AssetDatabase.Refresh();
-//		#endif
+		#if UNITY_EDITOR
+			AssetDatabase.Refresh();
+		#endif
 	}
 
 	private void GenerateLevenshteinDict(string corpus)
@@ -121,9 +122,9 @@ public class NGramGenerator : MonoBehaviour
 		string s = GetLine(levenshteinDict);
 		File.WriteAllText(Application.dataPath + "/Resources/AutoCorrect/levenshteinDict.txt", s);
 
-//		#if UNITY_EDITOR
-//			AssetDatabase.Refresh();
-//		#endif
+		#if UNITY_EDITOR
+			AssetDatabase.Refresh();
+		#endif
 	}
 
 	public void PredictNextWords(string input)

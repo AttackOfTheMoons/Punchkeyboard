@@ -50,8 +50,29 @@
       "type": "boolean"
     },
     {
+      "name": "/actions/default/in/ForwardDPad",
+      "type": "boolean",
+      "requirement": "mandatory"
+    },
+    {
+      "name": "/actions/default/in/LeftDPad",
+      "type": "boolean",
+      "requirement": "mandatory"
+    },
+    {
+      "name": "/actions/default/in/RightDPad",
+      "type": "boolean",
+      "requirement": "mandatory"
+    },
+    {
+      "name": "/actions/default/in/TriggerTextField",
+      "type": "boolean",
+      "requirement": "mandatory"
+    },
+    {
       "name": "/actions/default/out/Haptic",
-      "type": "vibration"
+      "type": "vibration",
+      "requirement": "suggested"
     },
     {
       "name": "/actions/platformer/in/Move",

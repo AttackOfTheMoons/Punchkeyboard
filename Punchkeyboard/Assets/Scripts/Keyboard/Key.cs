@@ -63,8 +63,8 @@ public class Key : MonoBehaviour
 		ConstrainPosition ();
 		currentDistance = Vector3.Distance(this.transform.position, initialPosition.position);
 
-		Vector3 PositionDelta = initialPosition.position - this.transform.position;
-		this.Rigidbody.velocity = PositionDelta * KeyBounceBackMultiplier * Time.deltaTime;
+		Vector3 positionDelta = initialPosition.position - this.transform.position;
+		this.Rigidbody.velocity = positionDelta * (KeyBounceBackMultiplier * Time.deltaTime);
 	}
 
 	void Update()

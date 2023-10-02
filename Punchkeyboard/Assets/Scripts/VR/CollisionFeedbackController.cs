@@ -1,53 +1,52 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using Valve.VR;
 
+// The purpose of this script is to give the user feedback when a key is actuated.
+// The script is attached to the tip of the drumstick and in unity it is indicated which hand the controller represents.
+
 public class CollisionFeedbackController : MonoBehaviour
 {
-	public Valve.VR.SteamVR_TrackedObject TrackedObject;
-	// private Valve.VR.SteamVR_Controller.Device device;
-	private const int KeyPressFeedbackStrength = 1500;
-	private bool isColliding = false;
 
-	void Start()
-	{
-		Key.keyPressed += KeyPressedHapticFeedback;
-	}
+    public SteamVR_Action_Vibration hapticAction;
+    public bool leftHand;
+    private const int KeyPressFeedbackStrength = 1500;
+    private bool isColliding = false;
 
-	private void OnCollisionStay(Collision collision)
-	{
-		isColliding = true;
-	}
+    void Start()
+    {
+        Key.keyPressed += KeyPressedHapticFeedback;
+    }
 
-	private void OnCollisionExit(Collision collision)
-	{
-		isColliding = false;
-	}
+    private void OnCollisionStay(Collision collision)
+    {
+        isColliding = true;
+    }
 
-	private void KeyPressedHapticFeedback()
-	{
-		if (isColliding)
-		{
-			StartCoroutine ("TriggerHapticFeedback", KeyPressFeedbackStrength);
-		}
-	}
+    private void OnCollisionExit(Collision collision)
+    {
+        isColliding = false;
+    }
 
-	private void Update()
-	{
-		device = SteamVR_Controller.Input ((int)TrackedObject.index);
-	}
+    private void KeyPressedHapticFeedback()
+    {
+        if (isColliding)
+        {
+            StartCoroutine ("TriggerHapticFeedback", KeyPressFeedbackStrength);
+        }
+    }
 
-	private void OnDisable()
-	{
-		Key.keyPressed -= KeyPressedHapticFeedback;
-	}
+    private void OnDisable()
+    {
+        Key.keyPressed -= KeyPressedHapticFeedback;
+    }
 
-	private IEnumerator TriggerHapticFeedback(int strength)
-	{
-		device.TriggerHapticPulse(500);
-		yield return new WaitForEndOfFrame();
-		device.TriggerHapticPulse(2000);
-		yield return new WaitForEndOfFrame();
-	}
+    private IEnumerator TriggerHapticFeedback(int strength)
+    {
+        var inputSource = leftHand ? SteamVR_Input_Sources.LeftHand : SteamVR_Input_Sources.RightHand;
+        hapticAction.Execute(0, (float) 0.0005, 150, 75, inputSource);
+        yield return new WaitForEndOfFrame();
+        hapticAction.Execute(0, (float) 0.002, 150, 75, inputSource);
+        yield return new WaitForEndOfFrame();
+    }
 }
