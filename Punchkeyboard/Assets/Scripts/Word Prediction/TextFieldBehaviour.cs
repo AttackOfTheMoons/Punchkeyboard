@@ -1,61 +1,63 @@
-﻿using UnityEngine;
-using UnityEngine.Events;
-using UnityEngine.EventSystems;
-using UnityEngine.UI;
-using System.Collections;
+﻿using System.Collections;
 using System.Linq;
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.Serialization;
+using UnityEngine.UI;
+
 //using WindowsInput;
 //using NewtonVR;
 
-public class TextFieldBehaviour : MonoBehaviour, ISelectHandler
+namespace Word_Prediction
 {
-	public NGramGenerator NGramHandler;
-	//public NVRButton Space;
+    public class TextFieldBehaviour : MonoBehaviour, ISelectHandler
+    {
+        [FormerlySerializedAs("NGramHandler")] public NGramGenerator nGramHandler;
+        //public NVRButton Space;
 
-	private InputField inputField;
+        private InputField inputField;
 
-	void Start()
-	{
-		inputField = gameObject.GetComponent<InputField>();
-	}
+        private void Start()
+        {
+            inputField = gameObject.GetComponent<InputField>();
+        }
 
-	public void OnSelect(BaseEventData eventData)
-	{
-		StartCoroutine(DisableHighlight());
-	}
+        private void Update()
+        {
+            //if(Input.GetKeyUp(KeyCode.Space) || Space.ButtonUp && inputField.isFocused)
+            if (!Input.GetKeyUp(KeyCode.Space)) return;
+            var inputText = inputField.text.TrimEnd();
+            var lastWord = inputText.Split(' ').Last();
+            nGramHandler.PredictNextWords(lastWord);
+        }
 
-	public void MoveCaretToEnd()
-	{
-		StartCoroutine(DisableHighlight());
-	}
+        public void OnSelect(BaseEventData eventData)
+        {
+            StartCoroutine(DisableHighlight());
+        }
 
-	IEnumerator DisableHighlight()
-	{
-		Color originalTextColor = inputField.selectionColor;
-		originalTextColor.a = 0f;
+        public void MoveCaretToEnd()
+        {
+            StartCoroutine(DisableHighlight());
+        }
 
-		inputField.selectionColor = originalTextColor;
+        private IEnumerator DisableHighlight()
+        {
+            var originalTextColor = inputField.selectionColor;
+            originalTextColor.a = 0f;
 
-		//Wait for one frame
-		yield return null;
+            inputField.selectionColor = originalTextColor;
 
-		//Scroll the view with the last character
-		inputField.MoveTextEnd(true);
-		//Change the caret pos to the end of the text
-		inputField.caretPosition = inputField.text.Length;
+            //Wait for one frame
+            yield return null;
 
-		originalTextColor.a = 1f;
-		inputField.selectionColor = originalTextColor;
-	}
+            //Scroll the view with the last character
+            inputField.MoveTextEnd(true);
+            //Change the caret pos to the end of the text
+            inputField.caretPosition = inputField.text.Length;
 
-	void Update()
-	{
-		//if(Input.GetKeyUp(KeyCode.Space) || Space.ButtonUp && inputField.isFocused)
-		if(Input.GetKeyUp(KeyCode.Space))
-		{
-			string inputText = inputField.text.TrimEnd();
-			string lastWord = inputText.Split(' ').Last ();
-			NGramHandler.PredictNextWords(lastWord);
-		}
-	}
+            originalTextColor.a = 1f;
+            inputField.selectionColor = originalTextColor;
+        }
+    }
 }

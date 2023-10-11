@@ -1,76 +1,64 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
+﻿using UnityEngine;
+using UnityEngine.Serialization;
 using WindowsInput;
 
 public class ShiftKeyBehaviour : MonoBehaviour
 {
-	public GameObject Housing;
-	private Renderer keyRenderer;
-	private BoxCollider keyCollider;
-	private GameObject keyCap;
+    [FormerlySerializedAs("Housing")] public GameObject housing;
+    private GameObject keyCap;
+    private BoxCollider keyCollider;
+    private Key[] keyControllers;
+    private Renderer keyRenderer;
+    private GameObject[] keys;
 
-	private Key shiftKeyController; 
-	private GameObject[] keys;
-	private Key[] keyControllers;
-	private bool shiftToggle = true;
+    private Key shiftKeyController;
+    private bool shiftToggle = true;
 
-	void Start()
-	{
-		Key.keyPressed += ShiftKeyPressed;
+    private void Start()
+    {
+        InputKey.keyPressedEvent += ShiftKeyPressed;
+        shiftKeyController = gameObject.GetComponent<Key>();
+        keys = GameObject.FindGameObjectsWithTag("Key");
+        keyControllers = new Key[keys.Length];
+        for (var i = 0; i < keys.Length; i++) keyControllers[i] = keys[i].GetComponent<Key>();
 
-		shiftKeyController = this.gameObject.GetComponent<Key> ();
-		keys = GameObject.FindGameObjectsWithTag ("Key");
-		keyControllers = new Key[keys.Length];
-		for (int i = 0; i < keys.Length; i++)
-		{
-			keyControllers [i] = keys [i].GetComponent<Key> ();
-		}
+        keyRenderer = gameObject.GetComponent<Renderer>();
+        keyCollider = gameObject.GetComponent<BoxCollider>();
+        keyCap = gameObject.transform.GetChild(0).gameObject;
+    }
 
-		keyRenderer = this.gameObject.GetComponent<Renderer> ();
-		keyCollider = this.gameObject.GetComponent<BoxCollider> ();
-		keyCap = this.gameObject.transform.GetChild(0).gameObject	;
-	}
+    private void OnDisable()
+    {
+        InputKey.keyPressedEvent -= ShiftKeyPressed;
+        if (!shiftToggle) InputSimulator.SimulateKeyPress(VirtualKeyCode.CAPITAL);
+    }
 
-	void ShiftKeyPressed()
-	{
-		if (shiftKeyController.KeyPressed)
-		{
-			for (int i = 0; i < keyControllers.Length; i++)
-			{
-				keyControllers [i].SwitchKeycapCharCase ();
-			}
-			if (shiftToggle)
-			{
-				shiftKeyController.KeycapColor = shiftKeyController.PressedKeycapColor;
-				InputSimulator.SimulateKeyPress(VirtualKeyCode.CAPITAL);
-				shiftToggle = false;
-			}
-			else if (!shiftToggle)
-			{
-				shiftKeyController.KeycapColor = shiftKeyController.InitialKeycapColor;
-				InputSimulator.SimulateKeyPress(VirtualKeyCode.CAPITAL);
-				shiftToggle = true;
-			}
-		}
-	}
-		
-	public void ShiftVisibilityToggle(bool state)
-	{
-		keyRenderer.enabled = state;
-		keyCollider.enabled = state;
-		keyCap.SetActive(state);
-		Housing.SetActive(state);
-		shiftKeyController.KeycapColor = shiftKeyController.InitialKeycapColor;
-	}
+    private void ShiftKeyPressed()
+    {
+        if (!shiftKeyController.keyPressed) return;
+        foreach (var key in keyControllers)
+            key.SwitchKeyCapCharCase();
 
-	void OnDisable()
-	{
-		Key.keyPressed -= ShiftKeyPressed;
-		if (!shiftToggle)
-		{
-			InputSimulator.SimulateKeyPress(VirtualKeyCode.CAPITAL);
-		}
-	}
+        if (shiftToggle)
+        {
+            shiftKeyController.keyCapColor = shiftKeyController.pressedKeyCapColor;
+            InputSimulator.SimulateKeyPress(VirtualKeyCode.CAPITAL);
+            shiftToggle = false;
+        }
+        else
+        {
+            shiftKeyController.keyCapColor = shiftKeyController.initialKeyCapColor;
+            InputSimulator.SimulateKeyPress(VirtualKeyCode.CAPITAL);
+            shiftToggle = true;
+        }
+    }
+
+    public void ShiftVisibilityToggle(bool state)
+    {
+        keyRenderer.enabled = state;
+        keyCollider.enabled = state;
+        keyCap.SetActive(state);
+        housing.SetActive(state);
+        shiftKeyController.keyCapColor = shiftKeyController.initialKeyCapColor;
+    }
 }

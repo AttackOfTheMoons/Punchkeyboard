@@ -1,141 +1,102 @@
-﻿using System.Collections;
+﻿using System;
 using System.Collections.Generic;
-using UnityEngine;
-using System;
 using System.Linq;
+using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
-using System.Text.RegularExpressions;
 
-public class Levenshtein : MonoBehaviour
+namespace Word_Prediction
 {
-	public NGramGenerator NGramHandler;
-	public Text[] ButtonLabels;
+    public class Levenshtein : MonoBehaviour
+    {
+        private const int MaxWordLength = 15;
+        private const int MaxLevenshteinCost = 7;
+        private const int MinLevenshteinCost = 1;
+        [FormerlySerializedAs("NGramHandler")] public NGramGenerator nGramHandler;
+        [FormerlySerializedAs("ButtonLabels")] public Text[] buttonLabels;
+        private List<string> corpus = new();
+        private bool isFirstLetterUpper;
+        private bool isUppercase;
 
-	private const int maxWordLength = 15;
-	private const int maxLevenshteinCost = 7;
-	private const int minLevenshteinCost = 1;
-	private List<string> corpus = new List<string>();
-	private bool isUppercase = false;
-	private bool isFirstLetterUpper = false;
+        private void Start()
+        {
+            corpus = nGramHandler.levenshteinCorpus;
+            for (var i = 0; i < buttonLabels.Length; i++) buttonLabels[i].text = corpus[i];
+        }
 
-	public static class LevenshteinDistance
-	{
-		// Levenshtein distance computation from dotnetpearls.com/levenshtein
-		public static int Compute(string s, string t)
-		{
-			int n = s.Length;
-			int m = t.Length;
-			int[,] d = new int[n + 1, m + 1];
+        public void RunAutoComplete(string input)
+        {
+            if (input.Length > 0)
+            {
+                var lastChar = input[^1..].ToCharArray();
+                var lastWord = input.Split(' ').Last();
+                var firstCharOfLastWord = lastWord[..].ToCharArray();
+                if (firstCharOfLastWord.Length >= 1)
+                {
+                    isFirstLetterUpper = firstCharOfLastWord[0].ToString().Any(char.IsUpper);
+                }
 
-			if (n == 0)
-			{
-				return m;
-			}
+                if (char.IsWhiteSpace(lastChar[0])) return;
+                if (lastWord.Length >= MaxWordLength) return;
+                var dict = new Dictionary<int, int>();
 
-			if (m == 0)
-			{
-				return n;
-			}
+                for (var i = 0; i < corpus.Count; i++)
+                {
+                    var cost = LevenshteinDistance.Compute(lastWord.ToLower(), corpus[i]);
+                    if (cost is >= MinLevenshteinCost and <= MaxLevenshteinCost) dict.Add(i, cost);
+                }
 
-			for (int i = 0; i <= n; d[i, 0] = i++)
-			{
-			}
+                if (lastWord.All(char.IsUpper)) isUppercase = true;
+                if (lastWord.Any(char.IsLower)) isUppercase = false;
 
-			for (int j = 0; j <= m; d[0, j] = j++)
-			{
-			}
+                var distanceOrder = dict.OrderBy(kp => kp.Value).Select(kp => kp.Key).ToList();
 
-			for (int i = 1; i <= n; i++)
-			{
-				for (int j = 1; j <= m; j++)
-				{
-					int cost = (t[j - 1] == s[i - 1]) ? 0 : 1;
-					d[i, j] = Math.Min(
-						Math.Min(d[i - 1, j] + 1, d[i, j - 1] + 1),
-						d[i - 1, j - 1] + cost);
-				}
-			}
-			return d[n, m];
-		}
-	}
+                for (var i = 0; i < distanceOrder.Count; i++)
+                    if (i < buttonLabels.Length)
+                    {
+                        if (isUppercase)
+                            buttonLabels[i].text = corpus[distanceOrder[i]].ToUpper();
+                        else if (isFirstLetterUpper && isUppercase == false)
+                            buttonLabels[i].text = char.ToUpper(corpus[distanceOrder[i]][0]) +
+                                                   corpus[distanceOrder[i]].Substring(1);
+                        else if (!isUppercase && isFirstLetterUpper == false)
+                            buttonLabels[i].text = corpus[distanceOrder[i]].ToLower();
+                    }
+            }
+        }
 
-	void Start()
-	{
-		corpus = NGramHandler.LevenshteinCorpus;
-		for(int i = 0; i < ButtonLabels.Length; i++)
-		{
-			ButtonLabels[i].text = corpus[i];
-		}
-	}
+        private static class LevenshteinDistance
+        {
+            // Levenshtein distance computation from http://dotnetpearls.com/levenshtein <Not Active Circa 2023>.
+            public static int Compute(string s, string t)
+            {
+                var n = s.Length;
+                var m = t.Length;
+                var d = new int[n + 1, m + 1];
 
-	public void RunAutoComplete(string input)
-	{
-		if(input.Length > 0)
-		{
-			char[] lastChar = input.Substring(input.Length - 1).ToCharArray();	
-			string lastWord = input.Split(' ').Last ();
-			char[] firstCharOfLastWord = lastWord.Substring(0).ToCharArray();
-			if (firstCharOfLastWord.Length >= 1)
-			{
-				if (firstCharOfLastWord[0].ToString().Any(char.IsUpper))
-				{
-					isFirstLetterUpper = true;
-				}
-				else
-				{
-					isFirstLetterUpper = false;
-				}
+                if (n == 0) return m;
 
-			}
-			if(!char.IsWhiteSpace(lastChar[0]))
-			{
-				if(lastWord.Length < maxWordLength)
-				{
-					if (input.Length >= 0)
-					{
-						Dictionary<int, int> dict = new Dictionary<int, int> ();
+                if (m == 0) return n;
 
-						for (int i = 0; i < corpus.Count; i++)
-						{
-							int cost = LevenshteinDistance.Compute (lastWord.ToLower(), corpus[i]);
-							if (cost >= minLevenshteinCost && cost <= maxLevenshteinCost)
-							{
-								dict.Add (i, cost);
-							}
-						}
+                for (var i = 0; i <= n; d[i, 0] = i++)
+                {
+                }
 
-						if (lastWord.All (char.IsUpper))
-						{
-							isUppercase = true;
-						}
-						if (lastWord.Any (char.IsLower))
-						{
-							isUppercase = false;
-						}
+                for (var j = 0; j <= m; d[0, j] = j++)
+                {
+                }
 
-						List<int> distanceOrder = dict.OrderBy (kp => kp.Value).Select (kp => kp.Key).ToList ();
+                for (var i = 1; i <= n; i++)
+                for (var j = 1; j <= m; j++)
+                {
+                    var cost = t[j - 1] == s[i - 1] ? 0 : 1;
+                    d[i, j] = Math.Min(
+                        Math.Min(d[i - 1, j] + 1, d[i, j - 1] + 1),
+                        d[i - 1, j - 1] + cost);
+                }
 
-						for (int i = 0; i < distanceOrder.Count; i++)
-						{
-							if (i < ButtonLabels.Length)
-							{
-								if (isUppercase)
-								{
-									ButtonLabels [i].text = corpus [distanceOrder [i]].ToUpper ();
-								}
-								else if (isFirstLetterUpper && isUppercase == false)
-								{
-									ButtonLabels [i].text = char.ToUpper(corpus [distanceOrder [i]][0]) + corpus [distanceOrder [i]].Substring(1);
-								}
-								else if(!isUppercase && isFirstLetterUpper == false)
-								{
-									ButtonLabels [i].text = corpus [distanceOrder [i]].ToLower ();
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
+                return d[n, m];
+            }
+        }
+    }
 }

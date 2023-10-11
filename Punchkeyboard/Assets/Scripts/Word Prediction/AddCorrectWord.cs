@@ -1,19 +1,20 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
-public class AddCorrectWord : MonoBehaviour
+namespace Word_Prediction
 {
-	private AutocompleteWordPicker wordPicker;
+    public class AddCorrectWord : MonoBehaviour
+    {
+        private AutocompleteWordPicker wordPicker;
 
-	void Start()
-	{
-		wordPicker = gameObject.GetComponentInParent<AutocompleteWordPicker>();
-	}
+        private void Start()
+        {
+            wordPicker = gameObject.GetComponentInParent<AutocompleteWordPicker>();
+        }
 
-	public void WordChosen()
-	{
-		wordPicker.ReplaceWord(gameObject.GetComponentInChildren<Text>().text);
-	}
+        public void WordChosen()
+        {
+            wordPicker.ReplaceWord(gameObject.GetComponentInChildren<Text>().text);
+        }
+    }
 }

@@ -70,6 +70,11 @@
       "requirement": "mandatory"
     },
     {
+      "name": "/actions/default/in/TriggerRaycast",
+      "type": "boolean",
+      "requirement": "mandatory"
+    },
+    {
       "name": "/actions/default/out/Haptic",
       "type": "vibration",
       "requirement": "suggested"

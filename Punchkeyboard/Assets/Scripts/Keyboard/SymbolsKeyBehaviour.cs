@@ -1,54 +1,46 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class SymbolsKeyBehaviour : MonoBehaviour
 {
-	public ShiftKeyBehaviour ShiftBehaviour;
+    public ShiftKeyBehaviour ShiftBehaviour;
+    private Key[] keyControllers;
+    private GameObject[] keys;
 
-	private Key symbolKeyController; 
-	private GameObject[] keys;
-	private Key[] keyControllers;
-	private bool symbolToggle = true;
+    private Key symbolKeyController;
+    private bool symbolToggle = true;
 
-	void Start()
-	{
-		Key.keyPressed += SpecialKeyPressed;
+    private void Start()
+    {
+        InputKey.keyPressedEvent += SpecialKeyPressed;
 
-		symbolKeyController = this.gameObject.GetComponent<Key> ();
-		keys = GameObject.FindGameObjectsWithTag ("Key");
-		keyControllers = new Key[keys.Length];
-		for (int i = 0; i < keys.Length; i++)
-		{
-			keyControllers [i] = keys [i].GetComponent<Key> ();
-		}
-	}
+        symbolKeyController = gameObject.GetComponent<Key>();
+        keys = GameObject.FindGameObjectsWithTag("Key");
+        keyControllers = new Key[keys.Length];
+        for (var i = 0; i < keys.Length; i++) keyControllers[i] = keys[i].GetComponent<Key>();
+    }
 
-	void SpecialKeyPressed()
-	{
-		if (symbolKeyController.KeyPressed)
-		{
-			for (int i = 0; i < keyControllers.Length; i++)
-			{
-				keyControllers [i].SwitchToSymbols ();
-			}
-			if (symbolToggle)
-			{
-				ShiftBehaviour.ShiftVisibilityToggle (false);
-				symbolKeyController.KeycapColor = symbolKeyController.PressedKeycapColor;
-				symbolToggle = false;
-			}
-			else if (!symbolToggle)
-			{
-				ShiftBehaviour.ShiftVisibilityToggle (true);
-				symbolKeyController.KeycapColor = symbolKeyController.InitialKeycapColor;
-				symbolToggle = true;
-			}
-		}
-	}
+    private void OnDisable()
+    {
+        InputKey.keyPressedEvent -= SpecialKeyPressed;
+    }
 
-	void OnDisable()
-	{
-		Key.keyPressed -= SpecialKeyPressed;
-	}
+    private void SpecialKeyPressed()
+    {
+        if (!symbolKeyController.keyPressed) return;
+        foreach (var key in keyControllers)
+            key.SwitchToSymbols();
+
+        if (symbolToggle)
+        {
+            ShiftBehaviour.ShiftVisibilityToggle(false);
+            symbolKeyController.keyCapColor = symbolKeyController.pressedKeyCapColor;
+            symbolToggle = false;
+        }
+        else
+        {
+            ShiftBehaviour.ShiftVisibilityToggle(true);
+            symbolKeyController.keyCapColor = symbolKeyController.initialKeyCapColor;
+            symbolToggle = true;
+        }
+    }
 }

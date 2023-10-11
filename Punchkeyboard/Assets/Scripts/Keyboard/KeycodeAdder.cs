@@ -1,21 +1,20 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
+using UnityEngine.Serialization;
 using WindowsInput;
 
 public class KeycodeAdder : MonoBehaviour
 {
-	public VirtualKeyCode KeyKeycode;
-	public VirtualKeyCode KeyKeycodeModifier;
-	public VirtualKeyCode[] AlternateKeyKeycode;
+    [FormerlySerializedAs("KeyKeycode")] public VirtualKeyCode keyKeycode;
+    [FormerlySerializedAs("KeyKeycodeModifier")] public VirtualKeyCode keyKeycodeModifier;
+    [FormerlySerializedAs("AlternateKeyKeycode")] public VirtualKeyCode[] alternateKeyKeycode;
 
-	public void SimulateKeyPress()
-	{
-		InputSimulator.SimulateKeyPress(KeyKeycode);
-	}
+    public void SimulateKeyPress()
+    {
+        InputSimulator.SimulateKeyPress(keyKeycode);
+    }
 
-	public void SimulateAlternateKeyPress()
-	{
-		InputSimulator.SimulateModifiedKeyStroke (KeyKeycodeModifier, AlternateKeyKeycode);
-	}
+    public void SimulateAlternateKeyPress()
+    {
+        InputSimulator.SimulateModifiedKeyStroke(keyKeycodeModifier, alternateKeyKeycode);
+    }
 }
