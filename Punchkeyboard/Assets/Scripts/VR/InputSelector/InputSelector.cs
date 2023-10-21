@@ -42,8 +42,8 @@ namespace VR.InputSelector
                     leftDrumStick.SetActive(true);
                     rightDrumStick.SetActive(true);
                     return;
-                case InputMethod.RayCasting:
                 case InputMethod.RayCastingWithSwiping:
+                case InputMethod.RayCasting:
                     leftControllerRaycast.enabled = true;
                     rightControllerRaycast.enabled = true;
                     return;

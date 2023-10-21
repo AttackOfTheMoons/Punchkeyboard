@@ -23,29 +23,42 @@ namespace VR
         private LineRenderer rayLine;
         private SteamVR_Input_Sources source;
 
+        private bool startupFailed = false;
+
         private void Start()
         {
             source = handType == HandType.Left ? SteamVR_Input_Sources.LeftHand : SteamVR_Input_Sources.RightHand;
             if (raycastOrigin == null) raycastOrigin = transform.Find("Model")?.Find("tip")?.Find("attach")?.transform;
+            if (raycastOrigin == null)
+            {
+                startupFailed = true;
+                Debug.LogWarning("Didn't find the " + handType + " controller.");
+                return;
+            }
             rayLine = GetComponent<LineRenderer>();
             rayLine.enabled = true;
         }
 
         private void Update()
         {
+            if (startupFailed)
+            {
+                return;
+            }
             var raycastOriginPosition = raycastOrigin.position;
-            rayLine.SetPosition(0, raycastOriginPosition);
             var raycastOriginForward = raycastOrigin.forward;
-            rayLine.SetPosition(1, raycastOriginPosition + raycastOriginForward);
-            var ray = new Ray(rayLine.transform.position, raycastOriginForward);
+            var ray = new Ray(raycastOriginPosition, raycastOriginForward);
+            rayLine.SetPosition(0, raycastOriginPosition);
+            if (Physics.Raycast(ray, out var shortenLine))
+            {
+                rayLine.SetPosition(1, shortenLine.point);
+            }
+            else {
+                rayLine.SetPosition(1, raycastOriginPosition + raycastOriginForward);
+            }
             // Check if the trigger button is pressed
             if (triggerAction.GetState(source))
             {
-                // Create a ray from the controller's position and direction
-
-                // Declare a RaycastHit variable to store information about the hit
-
-                // Perform the raycast
                 if (Physics.Raycast(ray, out var hit, maxRaycastDistance, keyLayerMask))
                     hitKey = hit.collider.GetComponent<InputKey>();
             }
