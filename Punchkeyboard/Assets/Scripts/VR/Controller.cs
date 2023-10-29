@@ -25,16 +25,17 @@ namespace VR
 
         private void OnTriggerStay(Collider col)
         {
-            if (grabGripAction.GetStateDown(inputSource) && col.gameObject.tag == "Keyboard")
-            {
-                foreach (var rb in keyRigidbodies) rb.isKinematic = true;
-                col.transform.SetParent(gameObject.transform);
-            }
-            else if (grabGripAction.stateUp && col.gameObject.tag == "Keyboard")
-            {
-                foreach (var rb in keyRigidbodies) rb.isKinematic = false;
-                col.transform.SetParent(null);
-            }
+            // moving keyboard around by gripping it.
+            // if (grabGripAction.GetStateDown(inputSource) && col.gameObject.tag == "Keyboard")
+            // {
+            //     foreach (var rb in keyRigidbodies) rb.isKinematic = true;
+            //     col.transform.SetParent(gameObject.transform);
+            // }
+            // else if (grabGripAction.stateUp && col.gameObject.tag == "Keyboard")
+            // {
+            //     foreach (var rb in keyRigidbodies) rb.isKinematic = false;
+            //     col.transform.SetParent(null);
+            // }
         }
     }
 }

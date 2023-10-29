@@ -77,7 +77,7 @@ public abstract class InputKey : MonoBehaviour
         var transformPosition = transform.position;
         currentDistance = Vector3.Distance(transformPosition, initialPositionPosition);
         var positionDelta = initialPositionPosition - transformPosition;
-        rigidbody.velocity = positionDelta * (KeyBounceBackMultiplier * Time.deltaTime);
+        rigidbody.velocity = positionDelta * (KeyBounceBackMultiplier * Time.fixedDeltaTime);
     }
 
     private void LateUpdate()
