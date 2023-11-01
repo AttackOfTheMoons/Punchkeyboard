@@ -1,4 +1,5 @@
 using System;
+using Keyboard;
 using UnityEngine;
 
 namespace VR.InputSelector
@@ -7,27 +8,36 @@ namespace VR.InputSelector
     {
         Drumstick,
         RayCasting,
-        RayCastingWithSwiping
+        XRSlate
     }
 
     public class InputSelector : MonoBehaviour
     {
         public InputMethod currentInputMethod;
+        
         public GameObject leftController;
         public GameObject rightController;
 
+        private GameObject rightDrumStick;
+        private GameObject leftDrumStick;
+        
+        private ControllerRayCasting rightControllerRaycast;
         private ControllerRayCasting leftControllerRaycast;
 
-        private GameObject leftDrumStick;
-        private ControllerRayCasting rightControllerRaycast;
-        private GameObject rightDrumStick;
-
+        public KeyboardManager keyboardManager;
+        private MotionDetection rightMotionDetector;
+        private MotionDetection leftMotionDetector;
+        
         private void Start()
         {
-            leftDrumStick = leftController.transform.Find("Drumsticks (left)").gameObject;
             rightDrumStick = rightController.transform.Find("Drumsticks (right)").gameObject;
-            leftControllerRaycast = leftController.GetComponent<ControllerRayCasting>();
+            leftDrumStick = leftController.transform.Find("Drumsticks (left)").gameObject;
+            
             rightControllerRaycast = rightController.GetComponent<ControllerRayCasting>();
+            leftControllerRaycast = leftController.GetComponent<ControllerRayCasting>();
+
+            rightMotionDetector = rightController.GetComponent<MotionDetection>();
+            leftMotionDetector = leftController.GetComponent<MotionDetection>();
 
             SetInputMethod(InputMethod.Drumstick);
         }
@@ -39,14 +49,17 @@ namespace VR.InputSelector
             switch (currentInputMethod)
             {
                 case InputMethod.Drumstick:
-                    leftDrumStick.SetActive(true);
                     rightDrumStick.SetActive(true);
-                    return;
-                case InputMethod.RayCastingWithSwiping:
+                    leftDrumStick.SetActive(true);
+                    break;
+                case InputMethod.XRSlate:
+                    rightMotionDetector.enabled = true;
+                    leftMotionDetector.enabled = true;
+                    goto case InputMethod.RayCasting;
                 case InputMethod.RayCasting:
-                    leftControllerRaycast.enabled = true;
                     rightControllerRaycast.enabled = true;
-                    return;
+                    leftControllerRaycast.enabled = true;
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -54,10 +67,15 @@ namespace VR.InputSelector
 
         private void DisableAllInputs()
         {
-            leftDrumStick.SetActive(false);
             rightDrumStick.SetActive(false);
-            leftControllerRaycast.enabled = false;
+            leftDrumStick.SetActive(false);
+            
             rightControllerRaycast.enabled = false;
+            leftControllerRaycast.enabled = false;
+            
+            rightMotionDetector.enabled = false;
+            leftMotionDetector.enabled = false;
+            keyboardManager.ResetRefinement();
         }
     }
 }

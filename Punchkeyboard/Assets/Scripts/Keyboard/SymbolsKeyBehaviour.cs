@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Keyboard;
+using UnityEngine;
 
 public class SymbolsKeyBehaviour : MonoBehaviour
 {
