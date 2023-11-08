@@ -22,7 +22,7 @@ namespace Keyboard
         private int refinementLevel;
 
 
-        private void Start()
+        private void Awake()
         {
             keyboardKeys = new GameObject[4][];
 
@@ -41,7 +41,7 @@ namespace Keyboard
 
         private void OnDisable()
         {
-            ResetRefinement();
+            // ResetRefinement();
         }
 
         private static GameObject[] FindKeysByName(IReadOnlyList<string> keyNames)
@@ -124,9 +124,9 @@ namespace Keyboard
                     else
                     {
                         row[i].SetActive(true);
-                        var scale = row[i].transform.localScale;
-                        scale.x = (refinementSequence != 0) ? 2 * ((float)Math.Log10(refinementSequence) + 1) * scale.x : 1;
-                        row[i].transform.localScale = scale;
+                        // var scale = row[i].transform.localScale;
+                        // scale.x = (refinementSequence != 0) ? 2 * ((float)Math.Log10(refinementSequence) + 1) * scale.x : 1;
+                        // row[i].transform.localScale = scale;
                     }
                 }
             }

@@ -46,7 +46,7 @@ namespace VR
                 if (motionTimer >= MotionDurationThreshold)
                 {
                     // Sustained motion for the specified duration.
-                    Debug.Log("Motion detected and sustained for " + motionTimer + " seconds.");
+                    // Debug.Log("Motion detected and sustained for " + motionTimer + " seconds.");
                     // Calculate the change in position since the last frame
                     var positionChange = currentPosition - previousPosition;
                     if (Mathf.Abs(positionChange.x) > Mathf.Abs(positionChange.y) && Mathf.Abs(positionChange.x) > Mathf.Abs(positionChange.z))
