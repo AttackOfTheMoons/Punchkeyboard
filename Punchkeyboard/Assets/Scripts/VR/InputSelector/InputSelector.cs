@@ -75,7 +75,7 @@ namespace VR.InputSelector
             
             rightMotionDetector.enabled = false;
             leftMotionDetector.enabled = false;
-            keyboardManager.ResetRefinement();
+            // keyboardManager.ResetRefinement();
         }
     }
 }

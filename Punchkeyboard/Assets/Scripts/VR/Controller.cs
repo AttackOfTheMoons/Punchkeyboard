@@ -13,28 +13,49 @@ namespace VR
         [FormerlySerializedAs("inputSources")] public SteamVR_Input_Sources inputSource;
 
         private readonly List<Rigidbody> keyRigidbodies = new();
-
+        private readonly List<Rigidbody> inputRigidBodies = new();
+        
 
         private void Start()
         {
             var keys = GameObject.FindGameObjectsWithTag("Key");
             foreach (var t in keys)
                 keyRigidbodies.Add(t.GetComponent<Rigidbody>());
+            var inputOptions = GameObject.FindGameObjectsWithTag("InputOption");
+            foreach (var r in inputOptions)
+                inputRigidBodies.Add(r.GetComponent<Rigidbody>());
         }
 
 
         private void OnTriggerStay(Collider col)
         {
             // moving keyboard around by gripping it.
-            if (grabGripAction.GetStateDown(inputSource) && col.gameObject.tag == "Keyboard")
+            if (grabGripAction.GetStateDown(inputSource))
             {
-                foreach (var rb in keyRigidbodies) rb.isKinematic = true;
-                col.transform.SetParent(gameObject.transform);
+                if (col.gameObject.tag == "Keyboard")
+                {
+                    foreach (var rb in keyRigidbodies) rb.isKinematic = true; 
+                    col.transform.SetParent(gameObject.transform);
+                }
+                else if (col.gameObject.tag == "InputSelector")
+                {
+                    foreach (var rb in inputRigidBodies) rb.isKinematic = true; 
+                    col.transform.SetParent(gameObject.transform);
+                }
+
             }
-            else if (grabGripAction.stateUp && col.gameObject.tag == "Keyboard")
+            else if (grabGripAction.stateUp)
             {
-                foreach (var rb in keyRigidbodies) rb.isKinematic = false;
-                col.transform.SetParent(null);
+                if (col.gameObject.tag == "Keyboard")
+                {
+                    foreach (var rb in keyRigidbodies) rb.isKinematic = false;
+                    col.transform.SetParent(null);
+                }
+                else if (col.gameObject.tag == "InputSelector")
+                {
+                    foreach (var rb in inputRigidBodies) rb.isKinematic = false; 
+                    col.transform.SetParent(null);
+                }
             }
         }
     }
