@@ -89,7 +89,7 @@ namespace Keyboard
 
         public void ExternalHit()
         {
-            transform.position += Vector3.forward * (DistanceToBePressed * 5);
+            transform.position += Vector3.down * (DistanceToBePressed * 2);
         }
 
         protected abstract void Hit();

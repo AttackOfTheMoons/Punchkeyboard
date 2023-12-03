@@ -26,37 +26,37 @@ namespace VR
                 inputRigidBodies.Add(r.GetComponent<Rigidbody>());
         }
 
-
-        private void OnTriggerStay(Collider col)
-        {
-            // moving keyboard around by gripping it.
-            if (grabGripAction.GetStateDown(inputSource))
-            {
-                if (col.gameObject.tag == "Keyboard")
-                {
-                    foreach (var rb in keyRigidbodies) rb.isKinematic = true; 
-                    col.transform.SetParent(gameObject.transform);
-                }
-                else if (col.gameObject.tag == "InputSelector")
-                {
-                    foreach (var rb in inputRigidBodies) rb.isKinematic = true; 
-                    col.transform.SetParent(gameObject.transform);
-                }
-
-            }
-            else if (grabGripAction.stateUp)
-            {
-                if (col.gameObject.tag == "Keyboard")
-                {
-                    foreach (var rb in keyRigidbodies) rb.isKinematic = false;
-                    col.transform.SetParent(null);
-                }
-                else if (col.gameObject.tag == "InputSelector")
-                {
-                    foreach (var rb in inputRigidBodies) rb.isKinematic = false; 
-                    col.transform.SetParent(null);
-                }
-            }
-        }
+        //Disabled moving the keyboard around because of an issue with refining keys.
+        // private void OnTriggerStay(Collider col)
+        // {
+        //     // moving keyboard around by gripping it.
+        //     if (grabGripAction.GetStateDown(inputSource))
+        //     {
+        //         if (col.gameObject.tag == "Keyboard")
+        //         {
+        //             foreach (var rb in keyRigidbodies) rb.isKinematic = true; 
+        //             col.transform.SetParent(gameObject.transform);
+        //         }
+        //         else if (col.gameObject.tag == "InputSelector")
+        //         {
+        //             foreach (var rb in inputRigidBodies) rb.isKinematic = true; 
+        //             col.transform.SetParent(gameObject.transform);
+        //         }
+        //
+        //     }
+        //     else if (grabGripAction.stateUp)
+        //     {
+        //         if (col.gameObject.tag == "Keyboard")
+        //         {
+        //             foreach (var rb in keyRigidbodies) rb.isKinematic = false;
+        //             col.transform.SetParent(null);
+        //         }
+        //         else if (col.gameObject.tag == "InputSelector")
+        //         {
+        //             foreach (var rb in inputRigidBodies) rb.isKinematic = false; 
+        //             col.transform.SetParent(null);
+        //         }
+        //     }
+        // }
     }
 }
