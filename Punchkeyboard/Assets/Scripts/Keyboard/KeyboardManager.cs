@@ -6,62 +6,36 @@ namespace Keyboard
 {
     public class KeyboardManager : MonoBehaviour
     {
-        private GameObject[][] keyboardKeys;
-        // private readonly Dictionary<GameObject[], Bounds> originalRowBounds = new();
-        
-        // private readonly Dictionary<GameObject, Vector3> originalPositions  = new();
-        // private readonly Dictionary<GameObject, Vector3> originalScales = new();
-        
-        private readonly Dictionary<GameObject, Vector3> targetPositions = new();
-        private readonly Dictionary<GameObject, Vector3> targetScales = new();
-        private Bounds[] originalRowBounds;
-        private int[] originalRowCount;
-        private Vector3[][] originalPositions;
-        private Vector3[][] originalScales;
-
-        private readonly Dictionary<GameObject, Renderer[]> objectRenderers = new();
         private const float InterpolationSpeed = 5f;
         private const float SpaceSpacing = .3f;
 
-        private enum Direction
-        {
-            Left = 1,
-            Right = 2
-        }
+        private readonly Dictionary<GameObject, Renderer[]> objectRenderers = new();
+
+        private readonly Dictionary<GameObject, Vector3> originalPositions = new();
+        private readonly Dictionary<GameObject, Vector3> originalScales = new();
+        private readonly Dictionary<GameObject, Vector3> targetPositions = new();
+        private readonly Dictionary<GameObject, Vector3> targetScales = new();
+        private GameObject[][] keyboardKeys;
+
+        private Bounds[] originalRowBounds;
+
         // refinementLevel is a base-10 integer represented as a "string" read from left to right.
         // Each digit in the "string" represents a specific action taken on the keyboard layout.
         // The rightmost digit represents the first action, and the leftmost digit represents the last action.
         // - '1' means "swipe left" to refine the keyboard (hide keys on the left).
         // - '2' means "swipe right" to refine the keyboard (hide keys on the right).
-        private int refinementLevel;
-
-        private void Update()
-        {
-            // Interpolate positions and scales during each frame update
-            foreach (var (key, targetPosition) in targetPositions)
-            {
-                key.transform.position = Vector3.Lerp(key.transform.position, targetPosition, Time.deltaTime * InterpolationSpeed);
-            }
-
-            foreach (var (key, targetScale) in targetScales)
-            {
-                key.transform.localScale = Vector3.Lerp(key.transform.localScale, targetScale, Time.deltaTime * InterpolationSpeed);
-            }
-        }
+        private int refinementString;
 
         private void Awake()
         {
             keyboardKeys = new GameObject[4][];
             originalRowBounds = new Bounds[4];
-            originalRowCount = new int[4];
-            originalPositions = new Vector3[4][];
-            originalScales = new Vector3[4][];
 
             // Initialize an array of key names
             string[] row1KeyNames = { "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P" };
             string[] row2KeyNames = { "A", "S", "D", "F", "G", "H", "J", "K", "L" };
-            string[] row3KeyNames = { "Shift", "Z", "X", "C", "V", "B", "N", "M", "Backspace"};
-            string[] row4KeyNames = { "Symbol", "Comma", "Space", "Period", "Return"};
+            string[] row3KeyNames = { "Shift", "Z", "X", "C", "V", "B", "N", "M", "Backspace" };
+            string[] row4KeyNames = { "Symbol", "Comma", "Space", "Period", "Return" };
             keyboardKeys[0] = FindKeysByName(row1KeyNames);
             keyboardKeys[1] = FindKeysByName(row2KeyNames);
             keyboardKeys[2] = FindKeysByName(row3KeyNames);
@@ -69,70 +43,68 @@ namespace Keyboard
 
             for (var row = 0; row < keyboardKeys.Length; row++)
             {
-                // var row = keyboardKeys[row];
                 originalRowBounds[row] = new Bounds();
-                originalPositions[row] = new Vector3[keyboardKeys[row].Length];
-                originalScales[row] = new Vector3[keyboardKeys[row].Length];
-                for (var index = 0; index < keyboardKeys[row].Length; index++)
+                foreach (var key in keyboardKeys[row])
                 {
-                    var key = keyboardKeys[row][index];
-                    originalPositions[row][index] = keyboardKeys[row][index].transform.position;
-                    originalScales[row][index] = keyboardKeys[row][index].transform.localScale;
+                    originalPositions[key] = key.transform.position;
+                    originalScales[key] = key.transform.localScale;
                     objectRenderers[key] = key.GetComponentsInChildren<Renderer>();
-                    foreach (var child in objectRenderers[key])
-                    {
-                        originalRowBounds[row].Encapsulate(child.bounds);
-                    }
+                    foreach (var child in objectRenderers[key]) originalRowBounds[row].Encapsulate(child.bounds);
                 }
             }
 
             ResetRefinement();
         }
 
+        private void Update()
+        {
+            // Interpolate positions and scales during each frame update
+            foreach (var (key, targetPosition) in targetPositions)
+                key.transform.position = Vector3.Lerp(key.transform.position, targetPosition,
+                    Time.deltaTime * InterpolationSpeed);
+
+            foreach (var (key, targetScale) in targetScales)
+                key.transform.localScale = Vector3.Lerp(key.transform.localScale, targetScale,
+                    Time.deltaTime * InterpolationSpeed);
+        }
+
         private static GameObject[] FindKeysByName(IReadOnlyList<string> keyNames)
         {
             var keys = new GameObject[keyNames.Count];
 
-            for (var i = 0; i < keyNames.Count; i++)
-            {
-                keys[i] = GameObject.Find(keyNames[i]);
-            }
+            for (var i = 0; i < keyNames.Count; i++) keys[i] = GameObject.Find(keyNames[i]);
 
             return keys;
         }
 
         public void ResetRefinement()
         {
-            refinementLevel = 0;
+            refinementString = 0;
             RefineKeyboard();
-            for (var row = 0; row < keyboardKeys.Length; row++)
+            foreach (var row in keyboardKeys)
+            foreach (var key in row)
             {
-                // var row = keyboardKeys[row];
-                for (var index = 0; index < keyboardKeys[row].Length; index++)
-                {
-                    var key = keyboardKeys[row][index];
-                    var keyTransform = key.transform;
-                    targetPositions[key] = originalPositions[row][index];
-                    targetScales[key] = originalScales[row][index];
-                    // Comment these out to make the transition smooth, but have issue of disabling the keyboard while moving.
-                    keyTransform.position = originalPositions[row][index];
-                    keyTransform.localScale = originalScales[row][index];
-                }
+                var keyTransform = key.transform;
+                targetPositions[key] = originalPositions[key];
+                targetScales[key] = originalScales[key];
+                // Comment these out to make the transition smooth, but have issue of disabling the keyboard while moving.
+                keyTransform.position = originalPositions[key];
+                keyTransform.localScale = originalScales[key];
             }
         }
 
         public void RefineLeft()
         {
-            refinementLevel = 10 * refinementLevel + (int) Direction.Left;
+            refinementString = 10 * refinementString + (int)Direction.Left;
             RefineKeyboard();
         }
 
         public void RefineRight()
         {
-            refinementLevel = 10 * refinementLevel + (int) Direction.Right;
+            refinementString = 10 * refinementString + (int)Direction.Right;
             RefineKeyboard();
         }
-        
+
         private static int ReverseSequence(int sequence)
         {
             var reversed = 0;
@@ -141,27 +113,26 @@ namespace Keyboard
                 reversed = reversed * 10 + sequence % 10;
                 sequence /= 10;
             }
+
             return reversed;
         }
 
-       
+
         private void RefineKeyboard()
         {
-            Bounds[] activeBounds = new Bounds[keyboardKeys.Length];
-            int[] activeRowCounts = new int[keyboardKeys.Length];
             // Make this read from left to right.
-            for (var j = 0; j < keyboardKeys.Length; j++)
+            for (var rowIndex = 0; rowIndex < keyboardKeys.Length; rowIndex++)
             {
-                var row = keyboardKeys[j];
-                activeBounds[j] = new Bounds();
+                var activeBounds = new Bounds();
                 float totalZ = 0;
-                var reversedSequence = ReverseSequence(refinementLevel);
+                var refinementSequence = ReverseSequence(refinementString);
                 var lowerBound = 0;
+                var row = keyboardKeys[rowIndex];
                 var upperBound = row.Length;
 
-                while (reversedSequence > 0)
+                while (refinementSequence > 0)
                 {
-                    var action = (Direction) (reversedSequence % 10);
+                    var action = (Direction)(refinementSequence % 10);
 
                     switch (action)
                     {
@@ -175,7 +146,7 @@ namespace Keyboard
                             throw new ArgumentOutOfRangeException();
                     }
 
-                    reversedSequence /= 10;
+                    refinementSequence /= 10;
                 }
 
                 var activeRow = new List<GameObject>();
@@ -183,26 +154,23 @@ namespace Keyboard
                 for (var keyIndex = 0; keyIndex < row.Length; keyIndex++)
                 {
                     var key = row[keyIndex];
-                    if (keyIndex < lowerBound || keyIndex > upperBound || (keyIndex == upperBound && lowerBound != upperBound))
+                    if (keyIndex < lowerBound || keyIndex > upperBound ||
+                        (keyIndex == upperBound && lowerBound != upperBound))
                     {
                         key.SetActive(false);
                     }
                     else
                     {
-                        activeRowCounts[j]++;
-                        foreach (var child in objectRenderers[key])
-                        {
-                            activeBounds[j].Encapsulate(child.bounds);
-                        }
+                        foreach (var child in objectRenderers[key]) activeBounds.Encapsulate(child.bounds);
                         totalZ += key.transform.position.z;
                         key.SetActive(true);
                         activeRow.Add(key);
                     }
                 }
 
-                var spacing = originalRowBounds[j].size.x / activeRowCounts[j];
-                var scaling = originalRowBounds[j].size.x / activeBounds[j].size.x;
-                var avgZ = totalZ / activeRowCounts[j];
+                var spacing = originalRowBounds[rowIndex].size.x / activeRow.Count;
+                var scaling = originalRowBounds[rowIndex].size.x / activeBounds.size.x;
+                var avgZ = totalZ / activeRow.Count;
                 for (var i = 0; i < activeRow.Count; i++)
                 {
                     var key = activeRow[i];
@@ -210,20 +178,17 @@ namespace Keyboard
                     var rot = key.transform.rotation;
                     var localScale = key.transform.localScale;
                     rot.y /= 2;
-                    pos.x = originalRowBounds[j].min.x + spacing * (i + 0.5f);
-                    for (var z = 0; z < keyboardKeys[j].Length; z++)
+                    pos.x = originalRowBounds[rowIndex].min.x + spacing * (i + 0.5f);
+                    for (var z = 0; z < row.Length; z++)
                     {
-                        if (key.name != keyboardKeys[j][z].name) continue;
-                        if (z + 1 < keyboardKeys[j].Length && keyboardKeys[j][z + 1].name == "Space")
-                        {
+                        if (key.name != row[z].name) continue;
+                        if (z + 1 < row.Length && row[z + 1].name == "Space")
                             pos.x -= spacing * SpaceSpacing;
-                        } 
-                        else if (z - 1 >= 0 && keyboardKeys[j][z - 1].name == "Space")
-                        {
+                        else if (z - 1 >= 0 && row[z - 1].name == "Space")
                             pos.x += spacing * SpaceSpacing;
-                        }
                     }
-                    pos.y = originalRowBounds[j].max.y;
+
+                    pos.y = originalRowBounds[rowIndex].max.y;
                     pos.z = avgZ;
                     localScale.x *= scaling;
                     targetPositions[key] = pos;
@@ -235,6 +200,11 @@ namespace Keyboard
                 }
             }
         }
-        
+
+        private enum Direction
+        {
+            Left = 1,
+            Right = 2
+        }
     }
 }
